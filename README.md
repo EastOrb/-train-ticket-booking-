@@ -181,8 +181,7 @@ contract TrainTicket {
     // Define TicketCancelled event
     event TicketCancelled(uint256 indexed id, address owner);
 
-  
-// Define TicketResold event
+    // Define TicketResold event
     event TicketResold(uint256 indexed id, address seller, address buyer, uint256 newPrice);
 
     // Define onlyOwner modifier
@@ -209,7 +208,7 @@ contract TrainTicket {
     }
 
     // Define createTicket function
-    function createTicket(string memory _route, uint256 _price) public {
+    function createTicket(string calldata _route, uint256 _price) external {
         // Generate a unique id for the ticket
         uint256 id = uint256(keccak256(abi.encodePacked(_route, _price, block.timestamp)));
 
@@ -224,7 +223,7 @@ contract TrainTicket {
     }
 
     // Define bookTicket function
-    function bookTicket(uint256 _id) public onlyAvailable(_id) {
+    function bookTicket(uint256 _id) external onlyAvailable(_id) {
         // Get the ticket from the tickets mapping
         Ticket storage ticket = tickets[_id];
 
@@ -240,55 +239,15 @@ contract TrainTicket {
     }
 
     // Define cancelBooking function
-    function cancelBooking(uint256 _id) public onlyBooked(_id) {
+    function cancelBooking(uint256 _id) external onlyBooked(_id) {
         // Get the ticket from the tickets mapping
         Ticket storage ticket = tickets[_id];
 
         // Calculate the refund amount (minus the cancellation fee)
         uint256 refund = (ticket.price * (100 - cancellationFee)) / 100;
 
-        // Transfer cUSD from the contract to the sender
-        require(cUSD.transfer(msg.sender, refund), "cUSD transfer failed");
+        // Transfer cUSD from
 
-        // Update the ticket owner and status
-        ticket.owner = address(0);
-        ticket.status = Status.Cancelled;
-
-        // Emit the TicketCancelled event
-        emit TicketCancelled(_id, msg.sender);
-    }
-
-    // Define resellTicket function
-    function resellTicket(uint256 _id, uint256 _newPrice) public onlyBooked(_id) {
-        // Get the ticket from the tickets mapping
-        Ticket storage ticket = tickets[_id];
-
-        // Transfer cUSD from the contract to the sender
-        require(cUSD.transfer(msg.sender, ticket.price), "cUSD transfer failed");
-
-        // Update the ticket price and status
-        ticket.price = _newPrice;
-        ticket.status = Status.Available;
-
-        // Emit the TicketResold event
-        emit TicketResold(_id, msg.sender, address(0), _newPrice);
-    }
-
-    // Define withdrawBalance function
-    function withdrawBalance() public {
-        // Get the balance of the sender from the balances mapping
-        uint256 balance = balances[msg.sender];
-
-        // Require that the balance is positive
-        require(balance > 0, "No balance to withdraw");
-
-        // Reset the balance of the sender to zero
-        balances[msg.sender] = 0;
-
-        // Transfer cUSD from the contract to the sender
-        require(cUSD.transfer(msg.sender, balance), "cUSD transfer failed");
-    }
-}
 ```
 
 That's it! You have successfully written the TrainTicket contract for your dapp. In the next step we will test and deploy this contract using hardhat. Stay tuned! 😊
